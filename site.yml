@@ -1,0 +1,72 @@
+---
+
+- hosts: all
+  become: true
+  vars:
+    wordpress:
+      software:
+        version: 4.4.2
+        install_dir: '/var/www/html/'
+        filesystem_user: apache
+
+      database:
+        name: 'elliot'
+        user: 'elliot'
+        password: 'elliot'
+        host: 'localhost'
+        charset: 'utf8'
+        collate: ''
+        table_prefix: 'wp_'
+
+      debug: false
+
+  pre_tasks:
+    # - name: Update the system
+    #   yum:
+    #     name: "*"
+    #     state: latest
+
+    - name: Install Software
+      yum:
+        name: "{{item}}"
+        state: latest
+      with_items:
+        - httpd
+        - php
+        - php-mysql
+        - mariadb
+        - mariadb-server
+        - MySQL-python
+
+    - name: Start Services
+      service:
+        name: "{{item}}"
+        state: started
+        enabled: true
+      with_items:
+        - httpd
+        - mariadb
+
+    - name: Configure MariaDB and create a database
+      mysql_db:
+        name: "{{wordpress.database.name}}"
+        state: present
+        login_user: root
+
+    - name: Configure MariaDB username and password
+      mysql_user:
+        name: "{{wordpress.database.user}}"
+        password: "{{wordpress.database.password}}"
+        state: present
+        priv: "{{wordpress.database.name}}.*:ALL"
+        login_user: root
+
+    - name: Configure firewall to allow HTTPd
+      firewalld:
+        service: http
+        state: enabled
+        permanent: true
+        immediate: true
+
+  roles:
+    - wordpress

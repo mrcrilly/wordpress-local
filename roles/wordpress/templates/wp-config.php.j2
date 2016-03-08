@@ -1,0 +1,18 @@
+<?php
+define('DB_NAME', '{{wordpress.database.name}}');
+define('DB_USER', '{{wordpress.database.user}}');
+define('DB_PASSWORD', '{{wordpress.database.password}}');
+define('DB_HOST', '{{wordpress.database.host}}');
+define('DB_CHARSET', '{{wordpress.database.charset}}');
+define('DB_COLLATE', '{{wordpress.database.collate}}');
+
+{{wp_salt.stdout}}
+
+$table_prefix  = '{{wordpress.database.table_prefix}}';
+
+define('WP_DEBUG', {{wordpress.debug}});
+
+if ( !defined('ABSPATH') )
+	define('ABSPATH', dirname(__FILE__) . '/');
+
+require_once(ABSPATH . 'wp-settings.php');

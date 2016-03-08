@@ -1,0 +1,17 @@
+---
+wordpress:
+  software:
+    version: 4.4.2
+    install_dir: '/var/sites/awesome_wordpress_site'
+    filesystem_user: apache
+
+  database:
+    name: 'database_name_here'
+    user: 'username_here'
+    password: 'password_here'
+    host: 'localhost'
+    charset: 'utf8'
+    collate: ''
+    table_prefix: 'wp_'
+
+  debug: false

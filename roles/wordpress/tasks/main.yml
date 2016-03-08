@@ -1,0 +1,50 @@
+---
+
+- name: Ensure that installation directory exists
+  file:
+    path: "{{wordpress.software.install_dir|dirname}}"
+    state: directory
+
+- name: Check we're not double-downloading
+  stat:
+    path: "/tmp/wordpress-{{wordpress.software.version}}.tar.gz"
+  register: have_wp_archive
+
+- name: Download {{wordpress.software.version}} to /tmp
+  get_url:
+    url: "http://wordpress.org/wordpress-{{wordpress.software.version}}.tar.gz"
+    force: no
+    dest: "/tmp/wordpress-{{wordpress.software.version}}.tar.gz"
+  when: not have_wp_archive.stat.exists
+
+- name: Extract archive
+  unarchive:
+    src: "/tmp/wordpress-{{wordpress.software.version}}.tar.gz"
+    dest: "{{wordpress.software.install_dir}}"
+    copy: no
+
+- name: Fetch random salts for wp-config.php
+  command: /usr/bin/curl -s https://api.wordpress.org/secret-key/1.1/salt/
+  become: no
+  register: 'wp_salt'
+
+- name: Copy wp-config.php file
+  template:
+    src: wp-config.php.j2
+    dest: "{{wordpress.software.install_dir}}/wp-config.php"
+
+- name: Change ownership of installation directory
+  file:
+    path: "{{wordpress.software.install_dir}}"
+    owner: "{{wordpress.software.filesystem_user}}"
+    group: "{{wordpress.software.filesystem_user}}"
+    state: directory
+    recurse: yes
+
+- name: Change ownership of uploads directory
+  file:
+    path: "{{wordpress.software.install_dir}}/wp-content/uploads/"
+    owner: "{{wordpress.software.filesystem_user}}"
+    group: "{{wordpress.software.filesystem_user}}"
+    state: directory
+    recurse: yes
